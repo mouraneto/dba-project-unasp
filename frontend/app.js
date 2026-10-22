@@ -1,6 +1,8 @@
-// API Base URL (Se rodando no Nginx na mesma porta usa relativo, senão aponta para localhost:8080)
-const API_BASE = window.location.port === '3000' || window.location.port === '80' || window.location.port === ''
-  ? '' 
+// API Base URL:
+// - Em Docker (porta 3000 via Nginx proxy): usa caminho relativo, o nginx repassa para o backend
+// - Abrindo diretamente no browser (porta 3000 via Node ou file://): aponta direto para API
+const API_BASE = (window.location.port === '80')
+  ? ''
   : 'http://localhost:8080';
 
 // Estado global
