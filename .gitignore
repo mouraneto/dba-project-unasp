@@ -1,0 +1,40 @@
+# JDK local e binários pesados
+jdk-*/
+*.zip
+*.tar.gz
+
+# Maven / Build
+target/
+**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDEs e Editores
+.idea/
+**/.idea/
+*.iml
+**/*.iml
+.vscode/
+**/.vscode/
+*.swp
+*.bak
+
+# Credenciais e Variáveis de Ambiente
+.env
+*.env.local
+
+# Logs
+*.log
+logs/
+
+# Sistema Operacional
+Thumbs.db
+Desktop.ini
+.DS_Store

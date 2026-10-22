@@ -1,0 +1,570 @@
+{
+  "info": {
+    "_postman_id": "a9d7b4c2-9876-4321-b123-abcdef123456",
+    "name": "UNASP - Faculdade Spring Boot API",
+    "description": "Coleção completa e automatizada de testes para a API da Faculdade UNASP.\n\nContém variáveis dinâmicas, testes automatizados (pm.test) que capturam os IDs automaticamente para os próximos passos, e casos de teste de validação/erro.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "professorId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "cursoId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "alunoId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Professores",
+      "item": [
+        {
+          "name": "1.1 Cadastrar Professor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code deve ser 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Deve retornar id gerado e dados corretos\", function () {",
+                  "    pm.expect(jsonData.id).to.be.a('number');",
+                  "    pm.expect(jsonData.nome).to.eql(\"Dr. Roberto Martins\");",
+                  "    pm.expect(jsonData.email).to.eql(\"roberto.martins@unasp.br\");",
+                  "});",
+                  "",
+                  "// Salva o professorId automaticamente para os proximos testes",
+                  "pm.collectionVariables.set(\"professorId\", jsonData.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Dr. Roberto Martins\",\n  \"email\": \"roberto.martins@unasp.br\",\n  \"departamento\": \"Tecnologia da Informacao\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/professor",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "professor"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.2 Listar Todos os Professores",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code deve ser 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Deve retornar uma lista com pelo menos 1 professor\", function () {",
+                  "    pm.expect(jsonData).to.be.an('array').that.is.not.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/professor",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "professor"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.3 Buscar Professor por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code deve ser 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Deve conter os dados do professor pesquisado\", function () {",
+                  "    pm.expect(jsonData.id).to.eql(pm.collectionVariables.get(\"professorId\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/professor/{{professorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "professor",
+                "{{professorId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Cursos",
+      "item": [
+        {
+          "name": "2.1 Cadastrar Curso (com ID do Professor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code deve ser 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Deve associar o professor corretamente\", function () {",
+                  "    pm.expect(jsonData.id).to.be.a('number');",
+                  "    pm.expect(jsonData.professorId).to.eql(pm.collectionVariables.get(\"professorId\"));",
+                  "    pm.expect(jsonData.professorNome).to.be.a('string');",
+                  "});",
+                  "",
+                  "// Salva o cursoId automaticamente para os proximos testes",
+                  "pm.collectionVariables.set(\"cursoId\", jsonData.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Analise e Desenvolvimento de Sistemas\",\n  \"professorId\": {{professorId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/curso",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "curso"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.2 Listar Todos os Cursos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code deve ser 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Deve retornar lista com curso e nome do professor\", function () {",
+                  "    pm.expect(jsonData).to.be.an('array').that.is.not.empty;",
+                  "    pm.expect(jsonData[0].professorNome).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/curso",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "curso"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.3 Buscar Curso por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code deve ser 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Deve conter os dados do curso pesquisado\", function () {",
+                  "    pm.expect(jsonData.id).to.eql(pm.collectionVariables.get(\"cursoId\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/curso/{{cursoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "curso",
+                "{{cursoId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Alunos",
+      "item": [
+        {
+          "name": "3.1 Cadastrar Aluno (com ID do Curso)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code deve ser 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Deve associar o curso corretamente\", function () {",
+                  "    pm.expect(jsonData.id).to.be.a('number');",
+                  "    pm.expect(jsonData.cursoId).to.eql(pm.collectionVariables.get(\"cursoId\"));",
+                  "    pm.expect(jsonData.cursoNome).to.be.a('string');",
+                  "});",
+                  "",
+                  "// Salva o alunoId automaticamente",
+                  "pm.collectionVariables.set(\"alunoId\", jsonData.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Neto Silva\",\n  \"email\": \"neto.silva@aluno.unasp.br\",\n  \"cursoId\": {{cursoId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/aluno",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "aluno"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.2 Listar Todos os Alunos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code deve ser 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Deve retornar lista com aluno e nome do curso\", function () {",
+                  "    pm.expect(jsonData).to.be.an('array').that.is.not.empty;",
+                  "    pm.expect(jsonData[0].cursoNome).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/aluno",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "aluno"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.3 Buscar Aluno por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code deve ser 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Deve conter os dados do aluno pesquisado\", function () {",
+                  "    pm.expect(jsonData.id).to.eql(pm.collectionVariables.get(\"alunoId\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/aluno/{{alunoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "aluno",
+                "{{alunoId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Testes de Erros e Validações",
+      "item": [
+        {
+          "name": "4.1 Erro - Curso com Professor Inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code deve ser 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Curso Invalido\",\n  \"professorId\": 9999\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/curso",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "curso"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.2 Erro - Aluno com Curso Inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code deve ser 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Aluno Sem Curso\",\n  \"email\": \"aluno.fantasma@unasp.br\",\n  \"cursoId\": 9999\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/aluno",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "aluno"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.3 Erro - Professor com Email Duplicado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code deve ser 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Dr. Clone\",\n  \"email\": \"roberto.martins@unasp.br\",\n  \"departamento\": \"TI\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/professor",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "professor"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.4 Erro - Validacao Campos Vazios",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code deve ser 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"\",\n  \"email\": \"invalido\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/professor",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "professor"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

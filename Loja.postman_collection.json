@@ -1,0 +1,101 @@
+{
+  "info": {
+    "_postman_id": "54e4e3d8-ee9b-45e5-91fc-075e6a2848c7",
+    "name": "Loja",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "57955343",
+    "_collection_link": "https://go.postman.co/collection/57955343-54e4e3d8-ee9b-45e5-91fc-075e6a2848c7?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "CadastroCliente",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \r\n\"nome\": \"Joao\" \r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/cliente",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "cliente"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "CadastroPedido",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \r\n\"data\": \"05/08/2026\",\r\n\"clienteId\": 3\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/pedido",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "pedido"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "RelatorioCliente",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/cliente",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "cliente"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "RelatorioPedido",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/pedido",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "pedido"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

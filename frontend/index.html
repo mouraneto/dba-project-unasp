@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNASP - Sistema Acadêmico & Debug Kanban</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
+
+  <!-- Top Navigation Header -->
+  <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="bg-amber-400 text-indigo-950 font-black rounded-lg p-2 text-xl tracking-wider">UNASP</div>
+        <div>
+          <h1 class="text-lg font-bold">Sistema Acadêmico</h1>
+          <p class="text-xs text-indigo-200">Spring Boot REST API &bull; MySQL / H2</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div id="api-status-badge" class="flex items-center space-x-2 text-xs bg-indigo-950 px-3 py-1.5 rounded-full border border-indigo-700">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="api-status-text">Conectando...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Abas Principais -->
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-2 pt-2 border-t border-indigo-800">
+      <button onclick="switchTab('professores')" id="tab-professores" class="tab-btn px-4 py-2 font-medium text-sm rounded-t-lg transition-colors border-b-2 border-amber-400 text-white bg-indigo-800">
+        <i class="fa-solid fa-chalkboard-user mr-2"></i>Professores
+      </button>
+      <button onclick="switchTab('cursos')" id="tab-cursos" class="tab-btn px-4 py-2 font-medium text-sm rounded-t-lg transition-colors border-b-2 border-transparent text-indigo-200 hover:text-white hover:bg-indigo-800/50">
+        <i class="fa-solid fa-graduation-cap mr-2"></i>Cursos
+      </button>
+      <button onclick="switchTab('alunos')" id="tab-alunos" class="tab-btn px-4 py-2 font-medium text-sm rounded-t-lg transition-colors border-b-2 border-transparent text-indigo-200 hover:text-white hover:bg-indigo-800/50">
+        <i class="fa-solid fa-user-graduate mr-2"></i>Alunos
+      </button>
+      <button onclick="switchTab('kanban')" id="tab-kanban" class="tab-btn px-4 py-2 font-medium text-sm rounded-t-lg transition-colors border-b-2 border-transparent text-amber-300 hover:text-white hover:bg-indigo-800/50 flex items-center">
+        <i class="fa-solid fa-table-columns mr-2"></i>Debug Kanban
+        <span id="kanban-badge-count" class="ml-2 bg-amber-400 text-indigo-950 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- Container de Conteúdo -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- Notificações Toast -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2"></div>
+
+    <!-- ========================================== -->
+    <!-- ABA 1: PROFESSORES -->
+    <!-- ========================================== -->
+    <section id="content-professores" class="tab-content block">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Formulário de Cadastro -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+            <i class="fa-solid fa-user-plus text-indigo-600 mr-2"></i>Cadastrar Professor
+          </h2>
+          <form id="form-professor" onsubmit="handleCadastrarProfessor(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nome Completo</label>
+              <input type="text" id="prof-nome" required placeholder="Ex: Dr. Roberto Martins"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Email Institucional</label>
+              <input type="email" id="prof-email" required placeholder="Ex: roberto.martins@unasp.br"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Departamento</label>
+              <input type="text" id="prof-departamento" placeholder="Ex: Tecnologia da Informação"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm shadow transition flex items-center justify-center">
+              <i class="fa-solid fa-save mr-2"></i>Salvar Professor
+            </button>
+          </form>
+        </div>
+
+        <!-- Lista de Professores -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-slate-800 flex items-center">
+              <i class="fa-solid fa-list text-indigo-600 mr-2"></i>Professores Cadastrados
+            </h2>
+            <button onclick="carregarProfessores()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center">
+              <i class="fa-solid fa-rotate mr-1"></i>Atualizar
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-600">
+              <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-xs border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-4">ID</th>
+                  <th class="py-3 px-4">Nome</th>
+                  <th class="py-3 px-4">Email</th>
+                  <th class="py-3 px-4">Departamento</th>
+                </tr>
+              </thead>
+              <tbody id="lista-professores" class="divide-y divide-slate-100">
+                <tr><td colspan="4" class="py-4 text-center text-slate-400">Carregando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA 2: CURSOS -->
+    <!-- ========================================== -->
+    <section id="content-cursos" class="tab-content hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Formulário -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+            <i class="fa-solid fa-folder-plus text-indigo-600 mr-2"></i>Cadastrar Curso
+          </h2>
+          <form id="form-curso" onsubmit="handleCadastrarCurso(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nome do Curso</label>
+              <input type="text" id="curso-nome" required placeholder="Ex: Análise e Desenvolvimento de Sistemas"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Professor Responsável (Chave Estrangeira)</label>
+              <select id="curso-prof-id" required
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                <option value="">Selecione um professor...</option>
+              </select>
+              <p class="text-[11px] text-slate-400 mt-1">O front envia o ID do professor no JSON, como demonstrado na aula.</p>
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm shadow transition flex items-center justify-center">
+              <i class="fa-solid fa-save mr-2"></i>Salvar Curso
+            </button>
+          </form>
+        </div>
+
+        <!-- Lista -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-slate-800 flex items-center">
+              <i class="fa-solid fa-list text-indigo-600 mr-2"></i>Cursos Cadastrados
+            </h2>
+            <button onclick="carregarCursos()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center">
+              <i class="fa-solid fa-rotate mr-1"></i>Atualizar
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-600">
+              <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-xs border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-4">ID</th>
+                  <th class="py-3 px-4">Nome do Curso</th>
+                  <th class="py-3 px-4">Professor Vinculado</th>
+                </tr>
+              </thead>
+              <tbody id="lista-cursos" class="divide-y divide-slate-100">
+                <tr><td colspan="3" class="py-4 text-center text-slate-400">Carregando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA 3: ALUNOS -->
+    <!-- ========================================== -->
+    <section id="content-alunos" class="tab-content hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Formulário -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+            <i class="fa-solid fa-user-graduate text-indigo-600 mr-2"></i>Cadastrar Aluno
+          </h2>
+          <form id="form-aluno" onsubmit="handleCadastrarAluno(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nome Completo</label>
+              <input type="text" id="aluno-nome" required placeholder="Ex: Neto Silva"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Email do Aluno</label>
+              <input type="email" id="aluno-email" required placeholder="Ex: neto.silva@aluno.unasp.br"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Curso Matriculado (Chave Estrangeira)</label>
+              <select id="aluno-curso-id" required
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                <option value="">Selecione um curso...</option>
+              </select>
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm shadow transition flex items-center justify-center">
+              <i class="fa-solid fa-save mr-2"></i>Salvar Aluno
+            </button>
+          </form>
+        </div>
+
+        <!-- Lista -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-slate-800 flex items-center">
+              <i class="fa-solid fa-list text-indigo-600 mr-2"></i>Alunos Matriculados
+            </h2>
+            <button onclick="carregarAlunos()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center">
+              <i class="fa-solid fa-rotate mr-1"></i>Atualizar
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-600">
+              <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-xs border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-4">ID</th>
+                  <th class="py-3 px-4">Nome</th>
+                  <th class="py-3 px-4">Email</th>
+                  <th class="py-3 px-4">Curso Vinculado</th>
+                </tr>
+              </thead>
+              <tbody id="lista-alunos" class="divide-y divide-slate-100">
+                <tr><td colspan="4" class="py-4 text-center text-slate-400">Carregando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA 4: DEBUG KANBAN (REQUISIÇÕES POSTMAN AO VIVO) -->
+    <!-- ========================================== -->
+    <section id="content-kanban" class="tab-content hidden">
+      <!-- Toolbar do Kanban -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800 flex items-center">
+            <i class="fa-solid fa-satellite-dish text-amber-500 mr-2 animate-pulse"></i>
+            Live Debug Kanban &bull; Monitor de Requisições do Postman
+          </h2>
+          <p class="text-xs text-slate-500">
+            Dispare chamadas no Postman para <code class="bg-slate-100 px-1 py-0.5 rounded text-indigo-700 font-mono">http://localhost:8080/...</code> e veja os cards surgirem em tempo real abaixo!
+          </p>
+        </div>
+        <div class="flex items-center space-x-3">
+          <div class="flex items-center space-x-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            <span>Live Feed Ativo (1.5s)</span>
+          </div>
+          <button onclick="limparHistoricoKanban()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded-lg transition border border-slate-300 flex items-center">
+            <i class="fa-solid fa-trash-can mr-1.5 text-slate-500"></i>Limpar
+          </button>
+        </div>
+      </div>
+
+      <!-- Quadro Kanban: 3 Colunas -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        
+        <!-- Coluna 1: Sucesso 2xx -->
+        <div class="bg-slate-50 rounded-xl border border-emerald-200 overflow-hidden shadow-sm">
+          <div class="bg-emerald-600 text-white px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2 font-bold text-sm">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>Sucesso (2xx)</span>
+            </div>
+            <span id="count-col-success" class="bg-emerald-800 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">0</span>
+          </div>
+          <div id="col-success" class="p-3 space-y-3 min-h-[400px] max-h-[70vh] overflow-y-auto">
+            <p class="text-center text-xs text-slate-400 py-10">Nenhuma requisição de sucesso capturada ainda.</p>
+          </div>
+        </div>
+
+        <!-- Coluna 2: Erros de Cliente 4xx -->
+        <div class="bg-slate-50 rounded-xl border border-amber-200 overflow-hidden shadow-sm">
+          <div class="bg-amber-500 text-white px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2 font-bold text-sm">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <span>Erros de Cliente (4xx)</span>
+            </div>
+            <span id="count-col-client" class="bg-amber-700 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">0</span>
+          </div>
+          <div id="col-client_error" class="p-3 space-y-3 min-h-[400px] max-h-[70vh] overflow-y-auto">
+            <p class="text-center text-xs text-slate-400 py-10">Nenhum erro 4xx capturado.</p>
+          </div>
+        </div>
+
+        <!-- Coluna 3: Falhas de Servidor 5xx -->
+        <div class="bg-slate-50 rounded-xl border border-rose-200 overflow-hidden shadow-sm">
+          <div class="bg-rose-600 text-white px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2 font-bold text-sm">
+              <i class="fa-solid fa-bug"></i>
+              <span>Falhas de Servidor (5xx)</span>
+            </div>
+            <span id="count-col-server" class="bg-rose-800 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">0</span>
+          </div>
+          <div id="col-server_error" class="p-3 space-y-3 min-h-[400px] max-h-[70vh] overflow-y-auto">
+            <p class="text-center text-xs text-slate-400 py-10">Nenhuma falha 5xx registrada.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal para Detalhes JSON do Kanban -->
+  <div id="json-modal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between border-b pb-3 mb-4">
+        <h3 id="modal-title" class="text-base font-bold text-slate-800">Detalhes da Requisição</h3>
+        <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+      </div>
+      <div class="overflow-y-auto space-y-4 flex-1 text-xs">
+        <div>
+          <label class="block font-bold text-slate-600 uppercase mb-1">Request Body (Payload enviado no Postman):</label>
+          <pre id="modal-req-body" class="bg-slate-900 text-emerald-400 p-3 rounded-lg overflow-x-auto font-mono max-h-48">Nenhum body</pre>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 uppercase mb-1">Response Body (Retorno da API):</label>
+          <pre id="modal-res-body" class="bg-slate-900 text-sky-400 p-3 rounded-lg overflow-x-auto font-mono max-h-48">Nenhum body</pre>
+        </div>
+      </div>
+      <div class="pt-4 border-t mt-4 flex justify-end">
+        <button onclick="fecharModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-4 py-2 rounded-lg text-xs">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

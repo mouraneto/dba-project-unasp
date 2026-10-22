@@ -1,0 +1,51 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: unasp_mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-unasp_faculdade}
+      MYSQL_USER: ${MYSQL_USER:-unasp_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-unasp_senha_secreta}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_senha_mestra}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./projeto-unasp
+      dockerfile: Dockerfile
+    container_name: unasp_backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE:-unasp_faculdade}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-unasp_user}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-unasp_senha_secreta}
+      SPRING_DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "${API_PORT:-8080}:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: unasp_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "${FRONT_PORT:-3000}:80"
+
+volumes:
+  mysql_data:
